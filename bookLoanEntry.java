@@ -11,29 +11,28 @@ public class bookLoanEntry{
 	public int userCardNumber; 
 	public String bookTitle; 
 
+	//Contructor 
 	bookLoanEntry(int userCardNumber, String bookTitle){
 
-      	checkoutCal = Calendar.getInstance();
+      	checkoutCal = Calendar.getInstance(); //users current date 
       	dueCal = Calendar.getInstance();
-      	dueCal.add(Calendar.DAY_OF_MONTH, 7);
+      	dueCal.add(Calendar.DAY_OF_MONTH, 7); //7 days are added to Calendar() object to represent the books due date
       	checkout = checkoutCal.getTime();
       	due = dueCal.getTime();
-      	this.bookTitle = bookTitle; 
+      	//indentifiers 
+      	this.bookTitle = bookTitle;   
       	this.userCardNumber = userCardNumber; 
 
 	}
-	
 
+	//returns the check out date for book in formatt mm/dd/yy
 	public String checkoutDateToString(){
 		return(f.format(checkout));
 	}
 
+	//returns the check out date for book in formatt mm/dd/yy
 	public String dueDateToString(){
 		return(f.format(due));
-	}
-
-	public static void main(String args[]){
-		//bookLoanEntry ble = new bookLoanEntry(3243254, "A book loan entrty-x");
 	}
 		
 }
