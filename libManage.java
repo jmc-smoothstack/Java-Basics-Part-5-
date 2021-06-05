@@ -1,225 +1,117 @@
-import java.util.Scanner;
-import java.util.ArrayList;
+import java.util.Scanner; 
+import java.util.ArrayList; 
+import java.util.*;
+import java.util.Calendar; 
+import java.io.*;
 
+public class library{
+	String name, address;
+	//books[][] is the catalog of books in the libraries system.
+	String[][] books = {{"Lost Tribe by Sidney Sheldon", "1"}, {"The Haunting by Stepehen King", "2"}, {"Microtrends by Mark Penn", "3"}};
+	//Vector of bookLoanEntry objects to track a library's loans 
+	Vector <bookLoanEntry> bookLoans = new Vector<bookLoanEntry>();
+	//Contructors 
+	library(){}
+	library(String name, String address){
+		this.name = name; 
+		this.address = address; 
+	}
+	//createLoan() creates a new loan entry and adds it to Vector of loans 
+	public void createLoan(int userCardNumber, String bookTitle){
 
-public class libManage{
-	
-	public static void Librarian(Scanner sc, library[] libraries){
+		bookLoanEntry loan = new bookLoanEntry(userCardNumber, bookTitle);
+		bookLoans.add(loan);
+		//bookOut() subtracts 1 book from avaliable books
+		bookOut(bookTitle);
+		System.out.println("Loan successfully created");
 
-		System.out.println("1) Enter Branch you manage \n2) Quit to previous");
-
-		int input = sc.nextInt();
-
-		String[] lib_names = {"University Library, Boston", "State Library, New York", "Federal Library, Washington DC", "County Library, McLean VA"};
-
-		switch(input)
+	}
+	//removes loan entry from Vector and adds copy back to inventory 
+	public void returnBook(int cardNumber, String bt){
+		int position = 0; //tracks poistion in Vector 
+		for(bookLoanEntry loan : bookLoans)
 		{
-			case 1:
-			System.out.println("Enter Branch you manage");
-			System.out.println("1) University Library, Boston \n2) State Library, New York \n3) Federal Library, Washington DC \n4) County Library, McLean VA \n5) Quit to previous");
-			
-			//input2 = lib index + 1 
-			int input2 = sc.nextInt();
-
-			if(input2 == 5){
-				Menu(sc, libraries); 
-			}else{
-				System.out.println("1) Update the details of the Library \n2) Add copies of book to the Branch \n3) Quit to previous");
-				int input3 = sc.nextInt();
-				String newBranchName = "", newBranchAddress; 
-				switch(input3){
-
-					case 1:
-					System.out.println("Please enter new branch name or enter N/A for no change:");
-					String getNewLineChar = sc.nextLine();
-					newBranchName = sc.nextLine();
-					libraries[input2-1].setName(newBranchName);
-					System.out.println("Please enter new branch address or enter N/A for no change:");
-					newBranchAddress = sc.nextLine();
-					libraries[input2-1].setAddress(newBranchAddress);
-					case 2:
-					boolean c2_exit = false; 
-					while(c2_exit == false){
-						System.out.println("Pick the Book you want to add copies of, to your branch:");
-						int quitIndex = libraries[input2-1].showBooks();
-						int book = sc.nextInt();
-						if(quitIndex == book){
-							c2_exit = true; 
-						}else{
-							System.out.println(libraries[input2-1].books[book-1][0] + "  copies: " + libraries[input2-1].books[book-1][1]);
-							System.out.println("Enter new number of copies:");
-							int toAdd = sc.nextInt(); 
-							libraries[input2-1].addBooks(libraries[input2-1].books[book-1][0], toAdd);	
-						}
-					}				
-					case 3:
-					Menu(sc, libraries);
+			if(loan.userCardNumber == cardNumber)
+			{
+				if(loan.bookTitle == bt)
+				{
+					break; 
 				}
 			}
+			position +=1;
 		}
-	}
-	//Validate() accepts a string and determines if it is an integer or invalid input 
-	public static boolean Validate(String str){
-		//Will return true if there are no digits in the string, will return false otherwise.
-		if(str.matches("[0-9]+")){
-			return true;
-		}else{
-			return false;
-		}
+		//removes bookLoanEntry() by position in Vector()
+		bookLoans.remove(position);
 
+		//adds copy back to inventory / raises availble copies for the specific book by 1 
+		for(String[] book : books){
+			if(book[0]==bt){
+				book[1] = Integer.toString(Integer.parseInt(book[1])+1);
+			}
+		}
+		System.out.println("remove succesful");
 	}
-	//Borrower is a MAIN() method for checking out and returning books 
-	public static void Borrower(Scanner sc, library[] libs)
-	{
-		//Contraints for a valid card number. 
-		boolean valid = false;
-		int cardNumber = 0; 
-		//will not let user proceed unil user enters a string with no letters. See Validate()
-		while(valid == false)
+
+	//addBooks() adds copies of a book in books[][] 
+	public void addBooks(String bookTitle, int booksToAdd){
+		for(String[] book : books)
 		{
-			System.out.println("Enter a valid card number: ");
-			String card = sc.nextLine();
-
-			if(Validate(card))
-			{
-				cardNumber = Integer.parseInt(card); 
-				valid = true;
+			if(book[0]==bookTitle){ 
+				book[1] = Integer.toString(Integer.parseInt(book[1])+booksToAdd);
+				System.out.println("copies successfully updated - copies: " + book[1]);
 			}
 		}
+	}
+	//get method to return Vector of book loans 
+	public Vector<bookLoanEntry> getBookLoans(){
+		return bookLoans;
+	}
 
-		//Display BORR1 prompt and accept user input 
-		System.out.println("1) Check out a book \n2) Return a book \n3) Quit to previous");
-		int input = sc.nextInt(); 
-		int quit_option = 1;
-		int input2, input3;  
-		String bookName;
-		switch(input)
+	//bookOut is used to subtract 1 from avalible books in the ibraries inventory  
+	public void bookOut(String bookTitle){
+		for(int i=0; i<books.length;i++){
+			//subtract book from inventory 
+			if(bookTitle == books[i][0]){
+				int current = Integer.parseInt(books[i][1])-1;
+				books[i][1] = Integer.toString(current);
+			}
+		}
+	}
+	//print method to show all books (titles and copies) in book catalog 
+	public int showBooks(){
+		int c = 0; 
+		for(int i=0; i<books.length; i++){
+			System.out.println(i+1+") "+books[i][0] + "  copies: " + books[i][1]);
+			c = i; 
+		}
+		//reutrns index for quit line 
+		System.out.println(c+2+") Quit to previous");
+		return c+2; 
+	}
+
+	//print method shows active loans 
+	public void showLoans(){
+		//checks if there is a loan in the loan array 
+		if(bookLoans.size() > 0)
 		{
-			case 1: //Option 1 - Checkout a book
-			System.out.println("Pick the Branch you want to check out from:");
-			//Print library names and get user input 
-			for (int y=0; y<libs.length; y++)
+			int c = 0; 
+			for(bookLoanEntry loan : bookLoans)
 			{
-				System.out.println(y+1+") "+libs[y].name);
+				System.out.println(c+1+") "+loan.userCardNumber + " " + loan.bookTitle);
+				c+=1; 
 			}
-			System.out.println(libs.length+1+") Quit to previous");
-			input2 = sc.nextInt();
-
-			//only show books that have atleast one copy in BOOK_COPIES in the branch picked
-			System.out.println("Pick the Book you want to check out ");
-			int i = 1;
-			//books with at least 1 copy are added to inStock[]
-			ArrayList<String> inStock = new ArrayList<String>();
-			for(String[] book : libs[input2-1].books){
-
-				if(Integer.parseInt(book[1])>0){
-					System.out.println(i+") "+book[0] + " - copies:" +book[1]);
-					inStock.add(book[0]);
-					i+=1;
-				}
-			}
-			//user chooses which in stocked book they want to add copies of
-			input3 = sc.nextInt();
-			bookName = inStock.get(input3-1); 
-
-			//Book Loan Entry is created and added to collection of bookloans
-			libs[input2-1].createLoan(cardNumber,bookName);
-
-			case 2: //Option 2 - return a book
-			System.out.println("Pick the Branch you want to return book to");
-			int j = 1;
-			//Display all branch names registered in system and accept user input 
-			for (int y=0; y<libs.length; y++)
-			{
-				System.out.println(y+1+") "+libs[y].name);
-				j+=1;
-			}
-			System.out.println(libs.length+1+") Quit to previous");
-			input2 = sc.nextInt();
-			j=1;
-			//Display all books names registered in system and accpet user input 
-			System.out.println("Pick the Book you are returning");
-			for(String[] book : libs[input2-1].books){
-				System.out.println(j+") "+book[0] + " - copies:" +book[1]);
-				j+=1;
-			}
-			input3 = sc.nextInt();
-
-			//bookName uses input2 to index correct library.  
-			bookName = libs[input2-1].name; 
-
-			//Create not loan entry and add it to loan book 
-			libs[input2-1].createLoan(cardNumber,bookName);
-
-			case 3:
-			Menu(sc, libs);
-		} 
-
+			System.out.println(c+2+") Quit to previous");
+		}else{System.out.println("No loans in system");}
 
 	}
-
-	public static void LibNames(library[] libs){
-
-		//variable will hold correct number to place quit to previous string. Accounts for more libraries being added 
-		int i = 0;
-		//iterate through each library() in the library[] libs 
-		for (library lib : libs)
-		{
-			System.out.println(i+1+") "+lib.name);
-			i += 1;
-		}
-		System.out.println(i+1+") Quit to previous");
+	//set method to set / change  library name 
+	public void setName(String s){
+		name = s; 
+		System.out.println("name successfully set");
 	}
-
-
-	public static boolean  Menu(Scanner sc, library[] libraries){
-
-		//Display prompt for MAIN 
-		System.out.println("1) Librarian \n2) Administrator \n3) Borrower \n4) Exit program");
-
-		//Accpet user input for MAIN. Input is accpeted as an int in coordinance with number in prompt string 
-		int input = sc.nextInt();
-
-		//Switch statement reads input to determine which MAIN method to run
-		switch(input){
-			case 1:
-			Librarian(sc, libraries);
-			case 2:
-			break;
-			case 3:
-			Borrower(sc, libraries);
-			case 4:
-			//Case 4 will for Main to return true and exit Main(); 
-			return true; 
-		} 
-		return false;
-	}
-
-
-
-	public static void main (String args[]){
-
-
-		//Creates new Scanner to accept user input 
-		Scanner sc = new Scanner(System.in);
-
-		//intialize a library array of size 4 (4 libraries)
-		library[] libraries = new library[4];
-
-		//Create library objects for the following libraries 
-		libraries[0] = new library("University Library","Boston");
-		libraries[1] = new library("State Library","New York");
-		libraries[2] = new library("Federal Library","Washington, DC");
-		libraries[3] = new library("County Library","McLean VA");
-
-		//control variable to terminate Menu() 
-		boolean exitMenu = false; 
-		while(exitMenu == false){
-			exitMenu = Menu(sc, libraries);
-		}
-
-		//close Scanner 
-		sc.close();
-
+	//set method to set / change library address 
+	public void setAddress(String s){
+		address = s;
+		System.out.println("address successfully set");
 	}
 }
